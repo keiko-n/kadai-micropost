@@ -1,3 +1,4 @@
+# 全てのコントローラがApplicationControllerを継承しているので、ここの記述すれば全てで使用可能になる
 class ApplicationController < ActionController::Base
   protect_from_forgery with: :exception
   
@@ -11,4 +12,8 @@ class ApplicationController < ActionController::Base
       redirect_to login_url
       end
   end
-end
+  
+  def counts(user)
+    @count_microposts = user.microposts.count
+  end
+end  
