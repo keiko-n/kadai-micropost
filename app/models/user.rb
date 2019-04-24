@@ -1,8 +1,7 @@
 class User < ApplicationRecord
     before_save { self.email.downcase! }
-    # User保存の前に{}内を実行する
-    # self.email.downcase! 文字を全て小文字に変換する
-    # ! をつけて自分自身を直接変換する
+    # User保存の前に{}内を実行
+    # self.email.downcase! 文字を全て小文字に変換/ ! をつけて自分自身を直接変換
     validates :name, presence: true, length: { maximum: 50 }
     validates :email, presence: true, length: {maximum: 255 },
                         format: { with: /\A[\w+\-.]+@[a-z\d\-.]+\.[a-z]+\z/i },
@@ -16,6 +15,9 @@ class User < ApplicationRecord
     has_many :followings, through: :relationships, source: :follow
     has_many :reverses_of_relationship, class_name: 'Relationship', foreign_key: 'follow_id'
     has_many :followers, through: :reverses_of_relationship, source: :user
+    
+    has_many :favorites
+    has_many :fav_microposts, through: :favorites, source: :micropost
     
     def follow(other_user)
       unless self == other_user
@@ -35,4 +37,18 @@ class User < ApplicationRecord
     def feed_microposts
       Micropost.where(user_id: self.following_ids + [self.id])
     end
+    
+    def like(micropost)
+      favorites.find_or_create_by(micropost_id: micropost.id)
+    end
+    
+    def unlike(micropost)
+      favorite = favorites.find_by(micropost_id: micropost.id)
+      favorite.destroy if favorite
+    end
+    
+    def fav_microposts?(micropost)
+      self.fav_microposts.include?(micropost)
+    end
+
 end
